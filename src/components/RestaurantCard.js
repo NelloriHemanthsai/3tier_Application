@@ -1,11 +1,10 @@
-function RestaurantCard(props) {
 
+function RestaurantCard(props) {
+    // Get restaurant data passed from App.js.
     const restaurant = props.restaurant;
 
     return (
-
         <div className="restaurant-card">
-
             <img
                 src={restaurant.image}
                 alt={restaurant.name}
@@ -19,12 +18,10 @@ function RestaurantCard(props) {
 
             <p>🕒 {restaurant.deliveryTime}</p>
 
-            <button>
-                View Menu
-            </button>
+            <p>₹{restaurant.costForTwo} for two</p>
 
+            <button>View Menu</button>
         </div>
-
     );
 }
 
