@@ -1,3 +1,4 @@
+import "./App.css";
 import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import Category from "./components/Category";
