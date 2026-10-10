@@ -6,21 +6,21 @@ import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import Category from "./components/Category";
 import RestaurantCard from "./components/RestaurantCard";
+import CategoryFilter from "./components/CategoryFilter";
 
 function App() {
-    // Store recipes received from the API.
+    // Data received from the demo API.
     const [recipes, setRecipes] = useState([]);
 
-    // Track whether the API request is still running.
+    // Track API loading and errors.
     const [loading, setLoading] = useState(true);
-
-    // Store an error message if the request fails.
     const [error, setError] = useState("");
 
-    // Store the search text submitted by the user.
+    // Track the user's search and cuisine selection.
     const [searchText, setSearchText] = useState("");
+    const [selectedCuisine, setSelectedCuisine] = useState("All");
 
-    // Fetch recipes once when the component first loads.
+    // Fetch recipes when the component first loads.
     useEffect(() => {
         async function fetchRecipes() {
             try {
@@ -28,20 +28,15 @@ function App() {
                     "https://dummyjson.com/recipes?limit=12"
                 );
 
-                // fetch() does not automatically reject HTTP errors like 404.
                 if (!response.ok) {
                     throw new Error("Failed to fetch recipes");
                 }
 
-                // Convert the response body from JSON into JavaScript data.
                 const data = await response.json();
-
-                // The API returns an object containing a recipes array.
                 setRecipes(data.recipes);
             } catch (err) {
                 setError(err.message);
             } finally {
-                // Runs whether the request succeeds or fails.
                 setLoading(false);
             }
         }
@@ -49,14 +44,24 @@ function App() {
         fetchRecipes();
     }, []);
 
-    // Filter recipes by name or cuisine.
-    const filteredRecipes = recipes.filter((recipe) => {
-        const search = searchText.toLowerCase();
+    // Get unique cuisine names from the API data.
+    const cuisines = [
+        ...new Set(recipes.map((recipe) => recipe.cuisine))
+    ].sort();
 
-        return (
+    // Filter by both search text and selected cuisine.
+    const filteredRecipes = recipes.filter((recipe) => {
+        const search = searchText.trim().toLowerCase();
+
+        const matchesSearch =
             recipe.name.toLowerCase().includes(search) ||
-            recipe.cuisine.toLowerCase().includes(search)
-        );
+            recipe.cuisine.toLowerCase().includes(search);
+
+        const matchesCuisine =
+            selectedCuisine === "All" ||
+            recipe.cuisine === selectedCuisine;
+
+        return matchesSearch && matchesCuisine;
     });
 
     const categories = [
@@ -76,6 +81,12 @@ function App() {
                 <p>Explore recipes from our demo API</p>
 
                 <SearchBar onSearch={setSearchText} />
+
+                <CategoryFilter
+                    cuisines={cuisines}
+                    selectedCuisine={selectedCuisine}
+                    onCuisineChange={setSelectedCuisine}
+                />
             </div>
 
             <div className="container">
@@ -100,18 +111,24 @@ function App() {
                 )}
 
                 {!loading && !error && (
-                    <div className="restaurant-list">
-                        {filteredRecipes.length > 0 ? (
-                            filteredRecipes.map((recipe) => (
-                                <RestaurantCard
-                                    key={recipe.id}
-                                    restaurant={recipe}
-                                />
-                            ))
-                        ) : (
-                            <p>No recipes found. Try another search.</p>
-                        )}
-                    </div>
+                    <>
+                        <p>
+                            Showing {filteredRecipes.length} of {recipes.length} recipes
+                        </p>
+
+                        <div className="restaurant-list">
+                            {filteredRecipes.length > 0 ? (
+                                filteredRecipes.map((recipe) => (
+                                    <RestaurantCard
+                                        key={recipe.id}
+                                        restaurant={recipe}
+                                    />
+                                ))
+                            ) : (
+                                <p>No recipes found. Try another search.</p>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
         </div>

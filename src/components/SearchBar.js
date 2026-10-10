@@ -5,23 +5,24 @@ function SearchBar(props) {
     // Store the text entered by the user.
     const [searchText, setSearchText] = useState("");
 
-    // Call the parent's search function when the button is clicked.
-    function handleSearch() {
-        props.onSearch(searchText);
+    function handleChange(event) {
+        const value = event.target.value;
+
+        // Update the input field.
+        setSearchText(value);
+
+        // Send the search text to App.js immediately.
+        props.onSearch(value);
     }
 
     return (
         <div className="search-container">
             <input
                 type="text"
-                placeholder="Search restaurants or food..."
+                placeholder="Search recipes or cuisine..."
                 value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
+                onChange={handleChange}
             />
-
-            <button onClick={handleSearch}>
-                Search
-            </button>
         </div>
     );
 }
