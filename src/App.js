@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 import Navbar from "./components/Navbar";
@@ -8,63 +8,64 @@ import Category from "./components/Category";
 import RestaurantCard from "./components/RestaurantCard";
 
 function App() {
-    // Remember the text submitted to the search.
+    // Store recipes received from the API.
+    const [recipes, setRecipes] = useState([]);
+
+    // Track whether the API request is still running.
+    const [loading, setLoading] = useState(true);
+
+    // Store an error message if the request fails.
+    const [error, setError] = useState("");
+
+    // Store the search text submitted by the user.
     const [searchText, setSearchText] = useState("");
+
+    // Fetch recipes once when the component first loads.
+    useEffect(() => {
+        async function fetchRecipes() {
+            try {
+                const response = await fetch(
+                    "https://dummyjson.com/recipes?limit=12"
+                );
+
+                // fetch() does not automatically reject HTTP errors like 404.
+                if (!response.ok) {
+                    throw new Error("Failed to fetch recipes");
+                }
+
+                // Convert the response body from JSON into JavaScript data.
+                const data = await response.json();
+
+                // The API returns an object containing a recipes array.
+                setRecipes(data.recipes);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                // Runs whether the request succeeds or fails.
+                setLoading(false);
+            }
+        }
+
+        fetchRecipes();
+    }, []);
+
+    // Filter recipes by name or cuisine.
+    const filteredRecipes = recipes.filter((recipe) => {
+        const search = searchText.toLowerCase();
+
+        return (
+            recipe.name.toLowerCase().includes(search) ||
+            recipe.cuisine.toLowerCase().includes(search)
+        );
+    });
 
     const categories = [
         { id: 1, name: "Pizza", icon: "🍕" },
         { id: 2, name: "Burger", icon: "🍔" },
         { id: 3, name: "Biryani", icon: "🍗" },
         { id: 4, name: "Healthy", icon: "🥗" },
-        { id: 5, name: "South Indian", icon: " dosa" }
+        { id: 5, name: "South Indian", icon: "🍽️" }
     ];
-
-    const restaurants = [
-        {
-            id: 1,
-            name: "Pizza Palace",
-            cuisine: "Italian Pizza",
-            rating: 4.5,
-            deliveryTime: "30-35 mins",
-            costForTwo: 400,
-            image: "https://images.unsplash.com/photo-1579751626657-72bc17010498"
-        },
-        {
-            id: 2,
-            name: "Burger House",
-            cuisine: "American Burgers",
-            rating: 4.2,
-            deliveryTime: "25-30 mins",
-            costForTwo: 300,
-            image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
-        },
-        {
-            id: 3,
-            name: "Biryani Point",
-            cuisine: "Indian Biryani",
-            rating: 4.7,
-            deliveryTime: "35-40 mins",
-            costForTwo: 500,
-            image: "https://images.unsplash.com/photo-1563379091339-03246963d96c"
-        },
-        {
-            id: 4,
-            name: "Dosa Corner",
-            cuisine: "South Indian Dosa",
-            rating: 4.3,
-            deliveryTime: "20-25 mins",
-            costForTwo: 250,
-            image: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976"
-        }
-    ];
-
-    // Keep restaurants whose name or cuisine matches the search.
-    const filteredRestaurants = restaurants.filter(function (restaurant) {
-        return (
-            restaurant.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            restaurant.cuisine.toLowerCase().includes(searchText.toLowerCase())
-        );
-    });
 
     return (
         <div>
@@ -72,7 +73,7 @@ function App() {
 
             <div className="hero">
                 <h1>Delicious food delivered to your door</h1>
-                <p>Order food from your favorite restaurants</p>
+                <p>Explore recipes from our demo API</p>
 
                 <SearchBar onSearch={setSearchText} />
             </div>
@@ -81,33 +82,37 @@ function App() {
                 <h2>Food Categories</h2>
 
                 <div className="categories">
-                    {categories.map(function (category) {
-                        return (
-                            <Category
-                                key={category.id}
-                                name={category.name}
-                                icon={category.icon}
-                            />
-                        );
-                    })}
+                    {categories.map((category) => (
+                        <Category
+                            key={category.id}
+                            name={category.name}
+                            icon={category.icon}
+                        />
+                    ))}
                 </div>
 
-                <h2>Popular Restaurants</h2>
+                <h2>Recipes from API</h2>
 
-                <div className="restaurant-list">
-                    {filteredRestaurants.length > 0 ? (
-                        filteredRestaurants.map(function (restaurant) {
-                            return (
+                {loading && <p>Loading recipes...</p>}
+
+                {!loading && error && (
+                    <p>Could not load recipes: {error}</p>
+                )}
+
+                {!loading && !error && (
+                    <div className="restaurant-list">
+                        {filteredRecipes.length > 0 ? (
+                            filteredRecipes.map((recipe) => (
                                 <RestaurantCard
-                                    key={restaurant.id}
-                                    restaurant={restaurant}
+                                    key={recipe.id}
+                                    restaurant={recipe}
                                 />
-                            );
-                        })
-                    ) : (
-                        <p>No restaurants found. Try another search.</p>
-                    )}
-                </div>
+                            ))
+                        ) : (
+                            <p>No recipes found. Try another search.</p>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

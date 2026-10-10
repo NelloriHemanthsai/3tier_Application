@@ -1,6 +1,6 @@
 
 function RestaurantCard(props) {
-    // Get restaurant data passed from App.js.
+    // This prop now contains one recipe from the API.
     const restaurant = props.restaurant;
 
     return (
@@ -12,15 +12,15 @@ function RestaurantCard(props) {
 
             <h3>{restaurant.name}</h3>
 
-            <p>{restaurant.cuisine}</p>
+            <p>Cuisine: {restaurant.cuisine}</p>
 
             <p>⭐ {restaurant.rating}</p>
 
-            <p>🕒 {restaurant.deliveryTime}</p>
+            <p>⏱️ Preparation: {restaurant.prepTimeMinutes} mins</p>
 
-            <p>₹{restaurant.costForTwo} for two</p>
+            <p>🔥 Calories: {restaurant.caloriesPerServing} per serving</p>
 
-            <button>View Menu</button>
+            <button>View Recipe</button>
         </div>
     );
 }
